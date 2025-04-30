@@ -2,7 +2,7 @@
 
 <JUCERPROJECT id="JW2pYZ" name="RibCrusher" projectType="audioplug" useAppConfig="0"
               addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1" pluginCharacteristicsValue="pluginProducesMidiOut,pluginWantsMidiIn"
-              pluginFormats="buildVST3" pluginVST3Category="Distortion" headerPath="/home/vilja/juce_hommat/JUCE/**">
+              pluginFormats="buildVST3" pluginVST3Category="Distortion" headerPath="../JUCE/**">
   <MAINGROUP id="KIJLHU" name="RibCrusher">
     <GROUP id="{2E877E7C-EB93-F249-C5CF-2F21126116A0}" name="Source">
       <FILE id="e5ikyK" name="PluginProcessor.cpp" compile="1" resource="0"
