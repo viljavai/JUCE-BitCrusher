@@ -57,7 +57,6 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
-    // https://www.youtube.com/watch?v=nkQPsYOdIrk&ab_channel=TheAudioProgrammer
     juce::AudioProcessorValueTreeState apvts;
     juce::Random random;
 

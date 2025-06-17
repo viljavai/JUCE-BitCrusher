@@ -22,6 +22,7 @@ RibCrusherAudioProcessorEditor::RibCrusherAudioProcessorEditor (RibCrusherAudioP
     bitDepthSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     bitDepthSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 50, 20);
     bitDepthSlider.setTextValueSuffix("bits");
+    bitDepthSlider.setSkewFactorFromMidPoint(7);
     addAndMakeVisible(&bitDepthSlider);
 
     bitDepthLabel.setText("Bit depth", juce::dontSendNotification);
@@ -33,14 +34,14 @@ RibCrusherAudioProcessorEditor::RibCrusherAudioProcessorEditor (RibCrusherAudioP
     sampleRateSlider.setName("Sample Rate");
     sampleRateSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     sampleRateSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 50, 20);
-    sampleRateSlider.setTextValueSuffix("kHz");
+    sampleRateSlider.setTextValueSuffix("Hz");
+    sampleRateSlider.setSkewFactorFromMidPoint(2200.0f);
     addAndMakeVisible(&sampleRateSlider);
 
     sampleRateLabel.setText("Sample rate", juce::dontSendNotification);
     sampleRateLabel.setColour(juce::Label::textColourId, juce::Colours::red);
     sampleRateLabel.setJustificationType(juce::Justification::bottom);
     addAndMakeVisible(&sampleRateLabel);
-
 
     // SliderAttachment (AudioProcessorValueTreeState &stateToUse, const String &parameterID, Slider &slider)
     bitDepthAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "BITDEPTH", bitDepthSlider);
@@ -67,9 +68,7 @@ void RibCrusherAudioProcessorEditor::paint (juce::Graphics& g)
     g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
 
     g.setColour (juce::Colours::grey);
-    g.setFont (juce::FontOptions (15.0f));
-    g.drawFittedText ("CRUSHHH!", getLocalBounds(), juce::Justification::centred, 1);
-}
+    g.setFont (juce::FontOptions (15.0f));}
 
 void RibCrusherAudioProcessorEditor::resized()
 {
