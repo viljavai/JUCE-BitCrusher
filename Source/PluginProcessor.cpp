@@ -205,8 +205,16 @@ void RibCrusherAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
             // quantization:
             // round incoming floats to the nearest int value in range [-maxVal, maxVal]
             int intSample = int(juce::roundToInt(ditheredSample * maxVal));
-            // audio buffer eats floats
-            channelData[sample] = (static_cast<float>(intSample) / maxVal);
+            // output buffer eats floats, so static cast
+            float quantSample = static_cast<float>(intSample) / maxVal;
+
+            // substractive dither done here
+            if (ditherEnabled) {
+                channelData[sample] = quantSample - ditherVal;
+            }
+            else {
+                channelData[sample] = quantSample;
+            }
         }
     }
 }
