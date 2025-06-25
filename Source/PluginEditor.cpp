@@ -80,19 +80,15 @@ void RibCrusherAudioProcessorEditor::resized()
     const int buttonHeight = 30;
     const int spacing = 20;
 
-    // Calculate positions
     const int totalWidth = (2 * sliderWidth) + spacing;
     const int startX = (getWidth() - totalWidth) / 2;
     const int centerY = getHeight() / 2;
 
-    // Set bounds for sliders
     bitDepthSlider.setBounds(startX, centerY - sliderHeight / 2, sliderWidth, sliderHeight);
     sampleRateSlider.setBounds(startX + sliderWidth + spacing, centerY - sliderHeight / 2, sliderWidth, sliderHeight);
 
-    // Set bounds for labels below sliders
     bitDepthLabel.setBounds(startX, centerY - sliderHeight / 2 + sliderHeight, sliderWidth, labelHeight);
     sampleRateLabel.setBounds(startX + sliderWidth + spacing, centerY - sliderHeight / 2 + sliderHeight, sliderWidth, labelHeight);
 
-    // Set bounds for button
     ditherButton.setBounds((getWidth() - sliderWidth) / 2, centerY + sliderHeight / 2 + spacing, sliderWidth, buttonHeight);
 }
