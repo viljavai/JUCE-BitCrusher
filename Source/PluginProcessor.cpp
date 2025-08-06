@@ -9,6 +9,8 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 #include "ExprParser.h"
+
+using namespace std;
 //==============================================================================
 RibCrusherAudioProcessor::RibCrusherAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -104,6 +106,9 @@ void RibCrusherAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
     auto channelsNum = getTotalNumInputChannels();
     sampleCount.assign(channelsNum,0.0f);
     currentSamples.assign(channelsNum,0.0f);
+
+    juce::dsp::ProcessSpec spec = { sampleRate, static_cast<juce::uint32> (samplesPerBlock), static_cast<juce::uint32> (getMainBusNumOutputChannels())  };
+    dryWetMixer.prepare(spec);
     
 }
 
@@ -149,7 +154,6 @@ void RibCrusherAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     int samplerateVal = apvts.getRawParameterValue("SAMPLERATE")->load();
     int bitShiftVal = apvts.getRawParameterValue("BITSHIFT")->load();
     bool ditherEnabled = apvts.getRawParameterValue("DITHER")->load();
-    //int mixVal = apvts.getRawParameterValue("MIX")->load();
 
     int N = int(hostSamplerate/samplerateVal);
 
@@ -162,6 +166,9 @@ void RibCrusherAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     for (auto i=totalNumInputChannels; i<totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
     //======================================================//
+
+    juce::dsp::AudioBlock<float> audioBlock(buffer);
+    dryWetMixer.pushDrySamples(audioBlock);
 
     auto& tokens = parsedExpr;
     std::vector<uint32_t> stack;
@@ -228,6 +235,9 @@ void RibCrusherAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
             channelData[sample] = processedSample;
         }
     }
+    float mixVal = apvts.getRawParameterValue("MIX")->load();
+    dryWetMixer.setWetMixProportion(mixVal);
+    dryWetMixer.mixWetSamples(audioBlock);
 }
 
 //==============================================================================
@@ -271,12 +281,12 @@ juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 
 juce::AudioProcessorValueTreeState::ParameterLayout RibCrusherAudioProcessor::createParameterLayout()
     {
-    std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
+    vector<unique_ptr<juce::RangedAudioParameter>> params;
     // AudioParameterInt is a type of RangedAudioParameter
-    params.push_back(std::make_unique<juce::AudioParameterInt>("BITDEPTH", "Bitdepth", 2, 16, 16));
-    params.push_back(std::make_unique<juce::AudioParameterBool>("DITHER", "Dither", true));
-    params.push_back(std::make_unique<juce::AudioParameterFloat>("SAMPLERATE", "Sample rate", 110.0f, 44100.0f, 44100.0f));
-    params.push_back(std::make_unique<juce::AudioParameterInt>("BITSHIFT", "Bitshift", 0, 64, 0));
-    //params.push_back(std::make_unique<juce::AudioParameterFloat>("MIX", "Mix", 0.0f, 1.0f, 1.0f));
+    params.push_back(make_unique<juce::AudioParameterInt>("BITDEPTH", "Bitdepth", 2, 16, 16));
+    params.push_back(make_unique<juce::AudioParameterBool>("DITHER", "Dither", true));
+    params.push_back(make_unique<juce::AudioParameterFloat>("SAMPLERATE", "Sample rate", 110.0f, 44100.0f, 44100.0f));
+    params.push_back(make_unique<juce::AudioParameterInt>("BITSHIFT", "Bitshift", 0, 64, 0));
+    params.push_back(make_unique<juce::AudioParameterFloat>("MIX", "Mix", 0.0f, 1.0f, 0.2f));
     return { params.begin(), params.end() };
     }

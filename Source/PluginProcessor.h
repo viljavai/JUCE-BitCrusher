@@ -61,6 +61,8 @@ public:
     juce::AudioProcessorValueTreeState apvts;
     juce::Random random;
 
+    juce::dsp::DryWetMixer<float> dryWetMixer;
+
     juce::String latestExpr = "x";
     std::vector<Token> parsedExpr;
     uint32_t           tCount = 0;       // running index for bytebeat synthesis

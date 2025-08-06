@@ -58,22 +58,22 @@ RibCrusherAudioProcessorEditor::RibCrusherAudioProcessorEditor (RibCrusherAudioP
     addAndMakeVisible(bitShiftLabel);
 
     // Mix slider
-    //mixSlider.setName("mix");
-    //mixSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    //mixSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 50, 20);
-    //addAndMakeVisible(&mixSlider);
+    mixSlider.setName("mix");
+    mixSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    mixSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 50, 20);
+    addAndMakeVisible(&mixSlider);
 
-    //mixLabel.setText("Dry/Wet mix", juce::dontSendNotification);
-    //mixLabel.setColour(juce::Label::textColourId, juce::Colours::red);
-    //mixLabel.setJustificationType(juce::Justification::bottom);
-    //addAndMakeVisible(mixLabel);
+    mixLabel.setText("Dry/Wet mix", juce::dontSendNotification);
+    mixLabel.setColour(juce::Label::textColourId, juce::Colours::red);
+    mixLabel.setJustificationType(juce::Justification::bottom);
+    addAndMakeVisible(mixLabel);
 
     // SliderAttachment (AudioProcessorValueTreeState &stateToUse, const String &parameterID, Slider &slider)
     bitDepthAttachment = make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "BITDEPTH", bitDepthSlider);
     sampleRateAttachment = make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "SAMPLERATE", sampleRateSlider);
     ditherAttachment = make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(audioProcessor.apvts, "DITHER", ditherButton);
     bitShiftAttachment = make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "BITSHIFT", bitShiftSlider);
-    //mixAttachment = make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "MIX", mixSlider);
+    mixAttachment = make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "MIX", mixSlider);
     
     ditherButton.setName("Dither");
     ditherButton.setToggleState(true, juce::dontSendNotification);
@@ -148,8 +148,8 @@ void RibCrusherAudioProcessorEditor::resized()
     bitShiftSlider.setBounds(startX + sliderWidth + 6*spacing, centerY - sliderHeight / 2, sliderWidth, sliderHeight);
     bitShiftLabel.setBounds(startX + sliderWidth + 6*spacing, centerY - sliderHeight / 2 + sliderHeight, sliderWidth, labelHeight);
 
-    //mixSlider.setBounds(startX + sliderWidth + 12*spacing, centerY - sliderHeight / 2, sliderWidth, sliderHeight);
-    //mixLabel.setBounds(startX + sliderWidth + 12*spacing, centerY - sliderHeight / 2 + sliderHeight, sliderWidth, labelHeight);
+    mixSlider.setBounds(startX + sliderWidth + 12*spacing, centerY - sliderHeight / 2, sliderWidth, sliderHeight);
+    mixLabel.setBounds(startX + sliderWidth + 12*spacing, centerY - sliderHeight / 2 + sliderHeight, sliderWidth, labelHeight);
 
     ditherButton.setBounds((getWidth() - sliderWidth) / 2, centerY + sliderHeight, sliderWidth, buttonHeight);
 

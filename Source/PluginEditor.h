@@ -11,6 +11,8 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "PluginProcessor.h"
 
+using namespace std;
+
 //==============================================================================
 /**
 */
@@ -31,24 +33,24 @@ private:
     juce::Slider bitDepthSlider;
     juce::Slider sampleRateSlider;
     juce::Slider bitShiftSlider;
-    //juce::Slider mixSlider;
+    juce::Slider mixSlider;
 
     juce::ToggleButton ditherButton;
 
     juce::TextEditor exprEditor;
 
     //Slider object ^ should be declared before this
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> bitDepthAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> sampleRateAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> ditherAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> bitShiftAttachment;
-    //std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> mixAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::Listener> editorAttachment;
+    unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> bitDepthAttachment;
+    unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> sampleRateAttachment;
+    unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> ditherAttachment;
+    unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> bitShiftAttachment;
+    unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> mixAttachment;
+    unique_ptr<juce::AudioProcessorValueTreeState::Listener> editorAttachment;
 
     juce::Label bitDepthLabel;
     juce::Label sampleRateLabel;
     juce::Label bitShiftLabel;
-    //juce::Label mixLabel;
+    juce::Label mixLabel;
 
     juce::Label ditherLabel;
 
