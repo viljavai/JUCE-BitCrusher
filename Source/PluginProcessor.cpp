@@ -8,7 +8,7 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
-
+#include "ExprParser.h"
 //==============================================================================
 RibCrusherAudioProcessor::RibCrusherAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -23,9 +23,8 @@ RibCrusherAudioProcessor::RibCrusherAudioProcessor()
                      // AudioProcessorValueTreeState (AudioProcessor &processorToConnectTo, UndoManager *undoManagerToUse, 
                      // const Identifier &valueTreeType, ParameterLayout parameterLayout)
                      //================================================================
- 	                 // Creates a state object for a given processor, and sets up all the parameters that will control that processor.
-                       ), apvts(*this, nullptr, "Parameters", createParameterLayout())
-                    // we have no undo manager, so we pass nullptr
+                       ), 
+                    apvts(*this, nullptr, "Parameters", createParameterLayout())
 #endif
 {
 }
@@ -148,12 +147,11 @@ void RibCrusherAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
 
     int bitDepthVal = apvts.getRawParameterValue("BITDEPTH")->load();
     int samplerateVal = apvts.getRawParameterValue("SAMPLERATE")->load();
+    int bitShiftVal = apvts.getRawParameterValue("BITSHIFT")->load();
     bool ditherEnabled = apvts.getRawParameterValue("DITHER")->load();
-
-    //std::cout << hostSamplerate << "\n";
+    //int mixVal = apvts.getRawParameterValue("MIX")->load();
 
     int N = int(hostSamplerate/samplerateVal);
-    //std::cout << N << "\n";
 
     // In case we have more outputs than inputs, this code clears any output
     // channels that didn't contain input data, (because these aren't
@@ -165,24 +163,28 @@ void RibCrusherAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
         buffer.clear (i, 0, buffer.getNumSamples());
     //======================================================//
 
+    auto& tokens = parsedExpr;
+    std::vector<uint32_t> stack;
+
     for (int channel=0; channel<totalNumInputChannels; ++channel)
     {
         auto* channelData = buffer.getWritePointer(channel);
 
         for (int sample=0; sample<buffer.getNumSamples(); ++sample)
         {   
-            // downsampling, sample and hold
-            // return sample every N samples i.e for chunk of N samples hold the first value of this chunk for duration of the chunk
-            // https://forum.juce.com/t/seeking-help-with-free-ratio-downsampler-plugin-dsp/18344/3
-            float heldSample = channelData[sample];
+            // 1) expression parsing
+            int inputInt = int(channelData[sample] * 127.5f + 128); // Map to 8-bit encoding [0,255]
+            int bytebeatValue = evaluateExpr(parsedExpr, tCount++, inputInt);
+            float sampleValue = (bytebeatValue & 0xFF) / 127.5f - 1.0f; // Map back to range [-1,1]
 
+            // 2) downsampling, sample and hold
+            // https://forum.juce.com/t/seeking-help-with-free-ratio-downsampler-plugin-dsp/18344/3
             // we don't have a sample held, capture current sample
             if (sampleCount[channel] == 0) {
-                currentSamples[channel] = heldSample;
+                currentSamples[channel] = sampleValue;
             }
             // repeat heldSample for N samples
             channelData[sample] = currentSamples[channel];
-
             if (++sampleCount[channel] >= N) {
                 // release
                 sampleCount[channel] = 0;
@@ -190,7 +192,7 @@ void RibCrusherAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
 
             float ditherVal = 0.0f;
             if (ditherEnabled) {
-                // TPDF dithering
+                // 3) TPDF dithering
                 // https://robin-prillwitz.de/misc/tpdf/tpdf.html
                 // scale ditherVal by one quantization step
                 float scalingFactor = 1.0f / (1 << bitDepthVal);
@@ -198,7 +200,7 @@ void RibCrusherAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
             }
             float ditheredSample = channelData[sample] + ditherVal;
 
-            // Change bit depth (with dither)
+            // 4) Change bit depth (with dither)
             // We want int values (signed n-bit int) between 2^(bitDepthVal-1)-1 and -(2^(bitDepthVal-1))
             // ex. bitDepthVal=8 -> int values between 127 and -128 (-127)
             int maxVal = (1 << (bitDepthVal - 1)) - 1;
@@ -209,12 +211,21 @@ void RibCrusherAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
             float quantSample = static_cast<float>(intSample) / maxVal;
 
             // substractive dither done here
+            float processedSample;
             if (ditherEnabled) {
-                channelData[sample] = quantSample - ditherVal;
+                processedSample = quantSample - ditherVal;
             }
             else {
-                channelData[sample] = quantSample;
+                processedSample = quantSample;
             }
+            
+            // 5) bit shift
+            int shiftedInt = (intSample << bitShiftVal);
+            shiftedInt = juce::jlimit(-maxVal, maxVal, shiftedInt);
+            // normalize
+            processedSample = float(shiftedInt) / float(maxVal);
+
+            channelData[sample] = processedSample;
         }
     }
 }
@@ -236,12 +247,19 @@ void RibCrusherAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
+
+    juce::MemoryOutputStream stream(destData, false);
+    apvts.state.writeToStream(stream);
 }
 
 void RibCrusherAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
+
+    auto tree = juce::ValueTree::readFromData(data, size_t(sizeInBytes));
+    if (tree.isValid())
+        apvts.replaceState(tree);
 }
 
 //==============================================================================
@@ -258,5 +276,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout RibCrusherAudioProcessor::cr
     params.push_back(std::make_unique<juce::AudioParameterInt>("BITDEPTH", "Bitdepth", 2, 16, 16));
     params.push_back(std::make_unique<juce::AudioParameterBool>("DITHER", "Dither", true));
     params.push_back(std::make_unique<juce::AudioParameterFloat>("SAMPLERATE", "Sample rate", 110.0f, 44100.0f, 44100.0f));
+    params.push_back(std::make_unique<juce::AudioParameterInt>("BITSHIFT", "Bitshift", 0, 64, 0));
+    //params.push_back(std::make_unique<juce::AudioParameterFloat>("MIX", "Mix", 0.0f, 1.0f, 1.0f));
     return { params.begin(), params.end() };
     }

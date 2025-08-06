@@ -9,6 +9,7 @@
 #pragma once
 
 #include "../JuceLibraryCode/JuceHeader.h"
+#include "ExprParser.h"
 
 //==============================================================================
 /**
@@ -60,14 +61,15 @@ public:
     juce::AudioProcessorValueTreeState apvts;
     juce::Random random;
 
+    juce::String latestExpr = "x";
+    std::vector<Token> parsedExpr;
+    uint32_t           tCount = 0;       // running index for bytebeat synthesis
+
 private:
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
-    // this functions as a counter for tracking repeating sample in downsampling
-    // vector because number of channels is dynamic
+    // functions as a counter for tracking repeating sample in downsampling
     std::vector<int> sampleCount;
-    // this stores the repeating sample in downsampling
-    // vector because number of channels is dynamic
-    // NOTE! this is a float [-1,1]
+    // stores the repeating sample in downsampling
     std::vector<float> currentSamples;
     double hostSamplerate = 0.0;
 
