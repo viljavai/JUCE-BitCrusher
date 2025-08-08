@@ -1,5 +1,5 @@
 ![Logo](/Source/logo.png)
-### Bitcrusher VST3 plug-in with bytebeat functionality for Linux.
+### Bitcrusher VST3 plugin with bytebeat functionality
 
 ![Screenshot](/Screenshots/screenshot.png)
 
