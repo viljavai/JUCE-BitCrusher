@@ -200,7 +200,6 @@ void RibCrusherAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
                 sampleCount[channel] = 0;
 
             // 2) downsampling, sample and hold
-            // https://forum.juce.com/t/seeking-help-with-free-ratio-downsampler-plugin-dsp/18344/3
             // we don't have a sample held, capture current sample
             if (sampleCount[channel] == 0) {
                 currentSamples[channel] = sampleValue;
@@ -215,7 +214,6 @@ void RibCrusherAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
             float ditherVal = 0.0f;
             if (ditherEnabled) {
                 // 3) TPDF dithering
-                // https://robin-prillwitz.de/misc/tpdf/tpdf.html
                 // scale ditherVal by one quantization step
                 float scalingFactor = 1.0f / (1 << bitDepthVal);
                 ditherVal = (random.nextFloat() - random.nextFloat()) * scalingFactor;
@@ -229,7 +227,6 @@ void RibCrusherAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
             // quantization:
             // round incoming floats to the nearest int value in range [-maxVal, maxVal]
             int intSample = int(juce::roundToInt(ditheredSample * maxVal));
-            // output buffer eats floats, so static cast
             float quantSample = static_cast<float>(intSample) / maxVal;
 
             // substractive dither done here
