@@ -40,8 +40,8 @@
   <EXPORTFORMATS>
     <LINUX_MAKE targetFolder="Builds/LinuxMakefile">
       <CONFIGURATIONS>
-        <CONFIGURATION isDebug="1" name="Debug" targetName="RibCrusher" optimisation="1"
-                       linuxArchitecture=""/>
+        <CONFIGURATION isDebug="0" name="Debug" targetName="RibCrusher" optimisation="3"
+                       linuxArchitecture="-m64"/>
         <CONFIGURATION isDebug="0" name="Release" targetName="RibCrusher"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
