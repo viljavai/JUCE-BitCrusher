@@ -36,15 +36,20 @@ private:
     juce::Slider mixSlider;
 
     juce::ToggleButton ditherButton;
+    juce::ToggleButton wrapToggle;
+    juce::TextButton infoButton { "?" };
 
     juce::TextEditor exprEditor;
 
     //Slider object ^ should be declared before this
     unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> bitDepthAttachment;
     unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> sampleRateAttachment;
-    unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> ditherAttachment;
     unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> bitShiftAttachment;
     unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> mixAttachment;
+
+    unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> ditherAttachment;
+    unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> wrapToggleAttachment;
+
     unique_ptr<juce::AudioProcessorValueTreeState::Listener> editorAttachment;
 
     juce::Label bitDepthLabel;
@@ -53,8 +58,9 @@ private:
     juce::Label mixLabel;
 
     juce::Label ditherLabel;
-
     juce::Label errorLabel;
+
+    juce::Image logoImg;
 
     RibCrusherAudioProcessor& audioProcessor;
 

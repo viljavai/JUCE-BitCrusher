@@ -154,9 +154,9 @@ void RibCrusherAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     int samplerateVal = apvts.getRawParameterValue("SAMPLERATE")->load();
     int bitShiftVal = apvts.getRawParameterValue("BITSHIFT")->load();
     bool ditherEnabled = apvts.getRawParameterValue("DITHER")->load();
+    bool wrapEnabled = apvts.getRawParameterValue("BYTEWRAP")->load();
 
-    int N = int(hostSamplerate/samplerateVal);
-
+    int N = samplerateVal > 0 ? int(hostSamplerate/samplerateVal) : 1;
     // In case we have more outputs than inputs, this code clears any output
     // channels that didn't contain input data, (because these aren't
     // guaranteed to be empty - they may contain garbage).
@@ -171,7 +171,6 @@ void RibCrusherAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     dryWetMixer.pushDrySamples(audioBlock);
 
     auto& tokens = parsedExpr;
-    std::vector<uint32_t> stack;
 
     for (int channel=0; channel<totalNumInputChannels; ++channel)
     {
@@ -179,10 +178,26 @@ void RibCrusherAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
 
         for (int sample=0; sample<buffer.getNumSamples(); ++sample)
         {   
+            float sampleValue;
             // 1) expression parsing
-            int inputInt = int(channelData[sample] * 127.5f + 128); // Map to 8-bit encoding [0,255]
-            int bytebeatValue = evaluateExpr(parsedExpr, tCount++, inputInt);
-            float sampleValue = (bytebeatValue & 0xFF) / 127.5f - 1.0f; // Map back to range [-1,1]
+            // Sample & hold for bytebeat t
+            if (sampleCount[channel] == 0)
+            {
+                tCount++;
+                int inputInt = int(channelData[sample] * 127.5f + 128);
+                int bytebeatValue = evaluateExpr(parsedExpr, tCount, inputInt);
+
+                if (wrapEnabled)
+                    sampleValue = (bytebeatValue & 0xFF) / 127.5f - 1.0f;
+                else
+                    sampleValue = juce::jlimit(-1.0f, 1.0f, float(bytebeatValue) / 127.5f - 1.0f);
+
+                currentSamples[channel] = sampleValue;
+            }
+            channelData[sample] = currentSamples[channel];
+
+            if (++sampleCount[channel] >= N)
+                sampleCount[channel] = 0;
 
             // 2) downsampling, sample and hold
             // https://forum.juce.com/t/seeking-help-with-free-ratio-downsampler-plugin-dsp/18344/3
@@ -231,7 +246,8 @@ void RibCrusherAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
             shiftedInt = juce::jlimit(-maxVal, maxVal, shiftedInt);
             // normalize
             processedSample = float(shiftedInt) / float(maxVal);
-
+            
+            processedSample = juce::jlimit(-1.0f, 1.0f, processedSample);
             channelData[sample] = processedSample;
         }
     }
@@ -288,5 +304,6 @@ juce::AudioProcessorValueTreeState::ParameterLayout RibCrusherAudioProcessor::cr
     params.push_back(make_unique<juce::AudioParameterFloat>("SAMPLERATE", "Sample rate", 110.0f, 44100.0f, 44100.0f));
     params.push_back(make_unique<juce::AudioParameterInt>("BITSHIFT", "Bitshift", 0, 64, 0));
     params.push_back(make_unique<juce::AudioParameterFloat>("MIX", "Mix", 0.0f, 1.0f, 0.2f));
+    params.push_back(make_unique<juce::AudioParameterBool>("BYTEWRAP", "8-bit wrap", true));
     return { params.begin(), params.end() };
     }

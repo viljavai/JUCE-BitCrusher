@@ -67,6 +67,8 @@ public:
     std::vector<Token> parsedExpr;
     uint32_t           tCount = 0;       // running index for bytebeat synthesis
 
+    std::vector<uint32_t> stack;
+
 private:
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     // functions as a counter for tracking repeating sample in downsampling

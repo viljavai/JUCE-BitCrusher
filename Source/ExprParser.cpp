@@ -14,34 +14,82 @@ vector<Token> shuntingYard (const string& expr)
 {
     static map<char,int> prec = {
         // L = <<, R = >>
-        // F = function (sin,cos)
-        {'F', 6},
-        {'*', 5}, {'/', 5},{ '%', 5},
-        {'+', 4}, {'-', 4},
-        {'L', 3}, {'R', 3},
-        {'&', 2},
-        {'^', 1},
-        {'|', 0}
+        // A = <=, B = >=
+        {'~', 9}, {'N', 9},
+        {'*', 8}, {'/', 8},{ '%', 8},
+        {'+', 7}, {'-', 7},
+        {'L', 6}, {'R', 6},
+        {'<', 5}, {'>', 5}, {'A', 5}, {'B', 5},
+        {'=', 4}, {'!', 4},
+        {'&', 3},
+        {'^', 2},
+        {'|', 1},
+        {'?', 0}, {':', 0} // TODO
     };
     vector<Token>      output;
     stack<char>        opstack;
 
     for (size_t i=0; i<expr.size(); ++i)
     {
-        if (expr.substr(i, 3) == "sin")
-        {
+        if (expr.substr(i, 3) == "sin") {
             output.push_back({TokenType::Function, 0, 0, "sin"});
             i += 2;
             continue;
         }
-        else if (expr.substr(i, 3) == "cos")
-        {
+        else if (expr.substr(i, 3) == "cos") {
             output.push_back({TokenType::Function, 0, 0, "cos"});
             i += 2;
             continue;
         }
-
         char c = expr[i];
+
+        if (i+1 < expr.size())
+        {
+            if (expr.substr(i,2) == "<=") {
+                char op = 'A';
+                while (!opstack.empty() && opstack.top() != '(' && prec.at(opstack.top()) >= prec.at(op))
+                {
+                    output.push_back({TokenType::Operator,0,opstack.top()});
+                    opstack.pop();
+                }
+                opstack.push(op);
+                ++i;
+                continue;
+            }
+            if (expr.substr(i,2) == ">=") {
+                char op = 'B';
+                while (!opstack.empty() && opstack.top() != '(' && prec.at(opstack.top()) >= prec.at(op))
+                {
+                    output.push_back({TokenType::Operator,0,opstack.top()});
+                    opstack.pop();
+                }
+                opstack.push(op);
+                ++i;
+                continue;
+            }
+            if (expr.substr(i,2) == "==") {
+                char op = '=';
+                while (!opstack.empty() && opstack.top() != '(' && prec.at(opstack.top()) >= prec.at(op))
+                {
+                    output.push_back({TokenType::Operator,0,opstack.top()});
+                    opstack.pop();
+                }
+                opstack.push(op);
+                ++i;
+                continue;
+            }
+            if (expr.substr(i,2) == "!=") {
+                char op = '!';
+                while (!opstack.empty() && opstack.top() != '(' && prec.at(opstack.top()) >= prec.at(op))
+                {
+                    output.push_back({TokenType::Operator,0,opstack.top()});
+                    opstack.pop();
+                }
+                opstack.push(op);
+                ++i;
+                continue;
+            }
+        }
 
         // bit shifts:
         if (i+1 < expr.size() && expr[i+1] == c && (c == '<' || c == '>'))
@@ -121,7 +169,6 @@ vector<Token> shuntingYard (const string& expr)
         output.push_back({TokenType::Operator,0,opstack.top()});
         opstack.pop();
     }
-
     return output;
 }
 
@@ -143,7 +190,8 @@ int evaluateExpr(const vector<Token>& tokens, uint32_t t, int x)
                 break;
             case TokenType::Function: {
                 if (stack.empty()) return 0;
-                int arg = stack.back(); stack.pop_back();
+                int arg = stack.back();
+                stack.pop_back();
                 if (token.func == "sin")
                     stack.push_back(static_cast<int>(127.5f * (std::sin(arg) + 1.0f)));
                 else if (token.func == "cos")
@@ -151,6 +199,15 @@ int evaluateExpr(const vector<Token>& tokens, uint32_t t, int x)
                 break;
             }
             case TokenType::Operator: {
+                // unary
+                if (token.op == '~') {
+                    if (stack.empty()) return 0;
+                    int b = stack.back();
+                    stack.pop_back();
+                    stack.push_back(~b);
+                    break;
+                }
+                // binary
                 if (stack.size() < 2) return 0;
                 int b = stack.back(); stack.pop_back();
                 int a = stack.back(); stack.pop_back();
@@ -175,6 +232,12 @@ int evaluateExpr(const vector<Token>& tokens, uint32_t t, int x)
                     case '^': stack.push_back(a ^ b); break;
                     case 'L': stack.push_back(a << b); break;
                     case 'R': stack.push_back(a >> b); break;
+                    case '<': stack.push_back(a < b); break;
+                    case '>': stack.push_back(a > b); break;
+                    case 'A': stack.push_back(a <= b); break;
+                    case 'B': stack.push_back(a >= b); break;
+                    case '=': stack.push_back(a == b); break;
+                    case '!': stack.push_back(a != b); break;
                 }
                 break;
             }

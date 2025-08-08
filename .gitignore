@@ -2,3 +2,4 @@
 **/JUCE
 **/JuceLibraryCode
 **/.vscode
+*.code-workspace

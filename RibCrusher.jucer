@@ -2,7 +2,8 @@
 
 <JUCERPROJECT id="JW2pYZ" name="RibCrusher" projectType="audioplug" useAppConfig="0"
               addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1" pluginCharacteristicsValue="pluginProducesMidiOut,pluginWantsMidiIn"
-              pluginFormats="buildVST3" pluginVST3Category="Distortion" headerPath="../JUCE/**&#10;../JuceLibraryCode/**">
+              pluginFormats="buildVST3" pluginVST3Category="Distortion" headerPath="../JUCE/**&#10;../JuceLibraryCode/**"
+              companyName="VaiVilja">
   <MAINGROUP id="KIJLHU" name="RibCrusher">
     <GROUP id="{2E877E7C-EB93-F249-C5CF-2F21126116A0}" name="Source">
       <FILE id="e5ikyK" name="PluginProcessor.cpp" compile="1" resource="0"
@@ -15,6 +16,8 @@
     </GROUP>
     <FILE id="hUaXZV" name="ExprParser.cpp" compile="1" resource="0" file="Source/ExprParser.cpp"/>
     <FILE id="nCOZDA" name="ExprParser.h" compile="0" resource="0" file="Source/ExprParser.h"/>
+    <FILE id="T0alvR" name="GuiConst.h" compile="0" resource="0" file="Source/GuiConst.h"/>
+    <FILE id="YKw0QF" name="logo.png" compile="0" resource="1" file="Source/logo.png"/>
   </MAINGROUP>
   <MODULES>
     <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
@@ -31,13 +34,14 @@
     <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="melatonin_inspector" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
   </MODULES>
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1" JUCE_VST3_CAN_REPLACE_VST2="0"/>
   <EXPORTFORMATS>
     <LINUX_MAKE targetFolder="Builds/LinuxMakefile">
       <CONFIGURATIONS>
-        <CONFIGURATION isDebug="0" name="Debug" targetName="RibCrusher" optimisation="3"
-                       linuxArchitecture="-m64"/>
+        <CONFIGURATION isDebug="1" name="Debug" targetName="RibCrusher" optimisation="1"
+                       linuxArchitecture=""/>
         <CONFIGURATION isDebug="0" name="Release" targetName="RibCrusher"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
@@ -54,6 +58,7 @@
         <MODULEPATH id="juce_graphics" path="../JUCE/modules"/>
         <MODULEPATH id="juce_gui_basics" path="../JUCE/modules"/>
         <MODULEPATH id="juce_gui_extra" path="../JUCE/modules"/>
+        <MODULEPATH id="melatonin_inspector" path="../../juce_hommat"/>
       </MODULEPATHS>
     </LINUX_MAKE>
   </EXPORTFORMATS>
